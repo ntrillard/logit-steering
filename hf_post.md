@@ -23,8 +23,8 @@ library_name: transformers
 
 Steering vectors computed for the **`Qwen/Qwen2-1.5B`** causal language model
 (bf16, 152k vocabulary, hidden dim 1536, RMSNorm). These are the exact
-`dL = α · zscore(mean_tgt − mean_neu) · top200` vectors that produce the
-reproducible vocabulary-transport results documented below and in the
+`dL = α · zscore(mean_tgt − mean_neu) · top200` vectors used in the
+experiments whose results are documented below and in the
 [GitHub repository](https://github.com/ntrillard/logit-steering).
 
 ---
@@ -103,13 +103,13 @@ K=200 is the maximum-alignment point, not a unique behavioral optimum.
 | 0.75 | 6/30 | 0 | 0.263 | +0.942 |
 | **1.00** | **0/30** | **23** | 1.000 | +0.195 |
 
-The pure row(W) projection (λ=1) is the **unique dead cell**; any nonzero
-out-of-row residual preserves the effect. **Note on reading this table:**
-the behavioral counts (3–6/30 for λ<1) are stochastic and effectively flat
-— the clean, reproducible invariant is the **geometric boundary**, not
-monotonic efficacy in λ. Every λ<1 cell keeps a nonzero out-of-row
-component; λ=1 removes it entirely and transport collapses to 0/30.
-Row-space escape is necessary; its *amount* does not scale efficacy.
+The pure row(W) projection (λ=1) is the **only tested dead cell** in this
+λ sweep; every λ<1 condition retained a nonzero out-of-row component and
+showed some transport. In these experiments, row-space escape appears
+necessary, but its magnitude did not predict efficacy. **Note on reading
+this table:** the behavioral counts (3–6/30 for λ<1) are stochastic and
+effectively flat — the clean, reproducible invariant is the **geometric
+boundary**, not monotonic efficacy in λ.
 
 ### 4. Semantic vs. lexical (neighbor_probe)
 
