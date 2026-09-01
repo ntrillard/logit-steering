@@ -53,7 +53,8 @@ also used the Instruct variant `Qwen/Qwen2-1.5B-Instruct`.
 ## What this is
 
 **These interventions provide causal evidence that, in the tested setting,
-effective vocabulary transport depends on retaining a distributed,
+effective vocabulary transport is not recovered by retaining the largest
+coordinates alone, and is associated with retaining a broader,
 magnitude-ranked window of coordinates from the vocabulary-logit contrast.**
 
 > **In the tested FANTASY/town setting, retaining only the top 1–50 magnitude
@@ -83,7 +84,9 @@ gain).
 held-out target word, stem-matched and case-normalized, and (b) is not
 degenerate: no repeated-token run of length ≥ 6 and type/token ratio > 0.6.
 `medMinR` is the median over seeds of the minimum rank of any held-out
-target token in the steered logit ordering over generated steps. Full
+target token in the steered logit ordering over generated steps (rank 0
+denotes the top-ranked token). Full evaluation code and per-seed outputs
+are in the repository.
 evaluation code and per-seed outputs are in the repository.
 
 ## Key results (all on Qwen2-1.5B, SEEDS = 30 unless noted)
@@ -127,12 +130,14 @@ as the relevant observation.
 | 0.75 | 6/30 | 0 | 0.263 | +0.942 |
 | **1.00** | **0/30** | **23** | 1.000 | +0.195 |
 
-**The strongest geometric observation is a sharp boundary at complete
+**The strongest geometric observation is a discontinuity at complete
 projection into row(W):** every λ<1 condition retained a nonzero
-out-of-row component and produced at least some observed transport in this
-30-seed run, whereas the pure row(W) projection (λ=1) produced none in 30
-seeds. In this experiment, complete removal of the out-of-row component
-coincided with complete loss of observed transport, and the magnitude of
+out-of-row component and showed at least some observed transport in this
+30-seed run; however, the absolute transport rates were low and did not
+increase monotonically with the out-of-row component. In this experiment,
+the pure row(W) projection (λ=1) produced none in 30 seeds; complete
+removal of the out-of-row component coincided with complete loss of
+observed transport, and the magnitude of
 the remaining out-of-row component did not predict efficacy. **Note on
 reading this table:** the behavioral counts (3–6/30 for λ<1) are stochastic
 and effectively flat. The clearest pattern in this experiment is the
@@ -182,6 +187,11 @@ stable lexical bias in this setting.
 - The behavioral effect is sparse across seeds: the intervention changes the
   relevant ranking dramatically, but only a minority of stochastic
   generations satisfy the transport criterion.
+
+**Interpretation:** the ablations are consistent with the effect being
+encoded in a structured combination of vocabulary coordinates and their
+relative weights, rather than in a small set of individually dominant
+coordinates.
 
 ### 7. Generalization (Test A, baseline-corrected, SEEDS=3)
 
