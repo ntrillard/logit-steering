@@ -86,8 +86,9 @@ gain).
 the top-k + ranked magnitudes are selected.
 
 ### 2. K is a sparse operating window, not a unique optimum
-Fine sweep (SEEDS=4, NTOK=60): sharp onset at **K≈150** (held-out rank 222→6),
-working regime **150–300**, dilution >300. 30-seed confirmation:
+Fine sweep (SEEDS=4, NTOK=60): in the tested sweep, efficacy appeared to
+emerge around **K≈150** (held-out rank 222→6) and persist through **K≈300**,
+with dilution at larger K. 30-seed confirmation:
 
 | K | transport | medMinR | R_row | cos→dLref |
 |---|---:|---:|---:|---:|
