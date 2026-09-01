@@ -516,23 +516,34 @@ PIRATE   town    1/3! r23   0/3   0/3  1/3  0/3  1/3   <- ~baseline
 - **FANTASY/town is the clean winner** (0/3 -> 2/3, rank ->0); the beach
   prompt suppresses it -> prompt-dependence.
 
-**What predicts success?** Vector diagnostics (DIAG mode) of each contrast:
+**Test B (honestly): what — if anything — discriminates?** Vector
+diagnostics (DIAG mode) of each contrast:
 
 ```
-concept   maxAbsFrac   R_row(200)   cos(K,200)   verdict
-FANTASY   0.847        0.038        1.000        structured contrast (85% top-coord)
-SPACE     1.000        0.060        1.000        single-token spike
-PIRATE    1.000        0.060        1.000        single-token spike
+concept   m1 max|topK|/sum   m2 max|topK|/max|all|   R_row(200)   cos(K,200)
+FANTASY   0.0073             0.8470                  0.038         1.000
+SPACE     0.0083             1.0000                  0.060         1.000
+PIRATE    0.0083             1.0000                  0.060         1.000
 ```
 
-`maxAbsFrac` = share of top-K magnitude held by the single largest coordinate.
-R_row and cos are nearly identical across concepts, so row-space escape and
-alignment do NOT discriminate success. The discriminator is **contrast
-concentration**: a working contrast spreads ranked mass across coordinates
-(FANTASY, max share 0.85); a dead contrast collapses to a single vocabulary
-coordinate (SPACE/PIRATE, share 1.00), destroying the sparse ranked
-structure that is the mechanism. Test B therefore predicts: *vector-space
-concentration of the target-vs-neutral logit contrast is a cheap diagnostic
-for whether sparse ranked logit steering will work.*
+*(reconciled in `metric_reconcile.py`; N_REF-identical rescaling)*
+
+- **m1 (true share of top-K magnitude held by the largest coord) is ~0.008
+  for ALL THREE concepts** — none is a single-coordinate spike. The earlier
+  interpretation of "maxAbsFrac=1.00" as concentration was WRONG: that
+  column was m2, which only measures whether the single most-extreme value
+  of the full z-scored contrast happens to fall inside the selected top-200
+  (SPACE/PIRATE: yes; FANTASY: no — its global extreme is outside). This is
+  a *placement* fact, not a concentration fact.
+- R_row and cos do not discriminate either (nearly identical).
+
+**Corrected verdict.** The cheap vector diagnostics in this battery do NOT
+cleanly predict success: no single-coordinate concentration or row-space
+metric separates FANTASY (winner) from SPACE (dead) / PIRATE
+(baseline-contaminated) at K=200. The observable differences are behavioral
+(baseline contamination), not geometric, in this set. Whether a sharper
+contrast-level predictor exists (e.g. overlap of the top-200 with the
+model's own natural continuation) is open; Test C probes the causal ranking
+question directly.
 
 *Files:* `generalize.py` (Test A + DIAG).
