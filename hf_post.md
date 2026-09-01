@@ -17,7 +17,7 @@ inference: false
 library_name: transformers
 ---
 
-# Sparse Ranked Logit Steering — Vector Suite & Findings
+# Beyond Top-K: Distributed Ranked Structure in Contrastive Logit Steering
 
 **Author:** N. Trillard — **September 2026**
 
@@ -53,12 +53,18 @@ generation (`α = 2.0`, applied after step `SW0 = 20`, nucleus p = 0.9).
 
 **The claim (supported, honest scope):**
 
-> The generatively effective operation is: take the vocabulary readout
-> contrast, select its top-200 positive coordinates with their ranked
-> magnitudes, and apply the resulting sparse vector as a logit offset. This
-> vector necessarily escapes `row(W)` (masking breaks representability), and
-> that *coordinated, distributed, magnitude-ranked* object — not any single
-> axis (sparsity alone, magnitudes alone, row-escape alone) — transports.
+> In the tested setting, the generatively effective operation appears to be:
+> take the vocabulary readout contrast, select its top-200 positive
+> coordinates with their ranked magnitudes, and apply the resulting sparse
+> vector as a logit offset. This vector necessarily escapes `row(W)`
+> (masking breaks representability), and that *coordinated, distributed,
+> magnitude-ranked* object — not any single axis (sparsity alone, magnitudes
+> alone, row-escape alone) — transports.
+
+**The single most important sentence in this card:**
+
+> **Top‑1…50 fails while a distributed ranked 150–300-coordinate window
+> succeeds.**
 
 **Honest limits:** the intervention is **sparse ranked lexical logit
 steering** — it forces the selected vocabulary coordinates; it does **not**
@@ -98,9 +104,13 @@ K=200 is the maximum-alignment point, not a unique behavioral optimum.
 | 0.75 | 6/30 | 0 | 0.263 | +0.942 |
 | **1.00** | **0/30** | **23** | 1.000 | +0.195 |
 
-The pure row(W) projection is the **unique dead cell**; any nonzero out-of-row
-residual preserves the effect. Row-space escape is necessary; its *amount*
-does not scale efficacy.
+The pure row(W) projection (λ=1) is the **unique dead cell**; any nonzero
+out-of-row residual preserves the effect. **Note on reading this table:**
+the behavioral counts (3–6/30 for λ<1) are stochastic and effectively flat
+— the clean, reproducible invariant is the **geometric boundary**, not
+monotonic efficacy in λ. Every λ<1 cell keeps a nonzero out-of-row
+component; λ=1 removes it entirely and transport collapses to 0/30.
+Row-space escape is necessary; its *amount* does not scale efficacy.
 
 ### 4. Semantic vs. lexical (neighbor_probe)
 
