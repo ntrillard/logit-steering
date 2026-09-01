@@ -452,3 +452,39 @@ defensible mechanism than semantic transport — and the honest way to describe
 the method to a reviewer.
 
 *Files:* `mechanism_matrix.py` (K×λ surface), `neighbor_probe.py` (lexical-vs-semantic).
+
+---
+
+## Part VI — Dynamic vs. static contrast (`dynamic_contrast.py`, SEEDS=30)
+
+Is the intervention a genuine adaptive steering mechanism, or a fixed
+lexical bias injected into generation? We compare, keeping K=200, norm,
+injection step (SW0=20), sampling, seeds, and token budget identical:
+
+| condition | what changes |
+|---|---|
+| STATIC | `dL` computed once, applied every step (reference) |
+| DYN_PREFIX | recompute target-vs-neutral contrast from live prefix each step |
+| DYN_SELF | contrast current self next-token distribution vs neutral each step |
+| NONE | no steering (baseline) |
+
+```
+condition     transport  medMinR  medMaxR  medDist1  medCosVsStatic
+STATIC        3/30        0        0        0.530     (reference)
+DYN_PREFIX    1/30        2        2        0.430     +0.955
+DYN_SELF      0/30       71        0        0.336     +0.013
+NONE (base)   0/30       51        0        0.677     -
+```
+
+**Reading.** Recomputed-at-prefix concept contrast is *almost identical* to
+the static vector (cos +0.955) and does not improve transport (1/30 vs 3/30).
+A self-referential contrast (the model's own next-token distribution) is
+*orthogonal* to the concept direction (+0.013) and inert (0/30, rank 71).
+
+**Conclusion.** The operation is a **fixed sparse lexical bias**, not an
+adaptive steering mechanism. It does not track the evolving prefix — its
+efficacy comes entirely from the static ranked-coordinate pattern computed
+once. This closes the adaptive-vs-fixed confound: no dynamic recomputation
+reproduces or improves the static result.
+
+*File:* `dynamic_contrast.py`.
