@@ -65,14 +65,16 @@ generation (`α = 2.0`, applied after step `SW0 = 20`, nucleus p = 0.9).
 
 The apparent paradox is causal: **removing the largest coordinate does not
 remove the effect, while retaining only the largest coordinates does**.
-These results rule out a single load-bearing coordinate and several simple
-sparsification controls in the tested setting. They are consistent with the
+These results rule out a single load-bearing coordinate and disfavor
+several simple sparsification explanations in the tested setting. They are
+consistent with the
 effect depending on the **distributed ranked structure of the window**.
 
 **Honest limits:** the intervention is **sparse ranked lexical logit
 steering** — it forces the selected vocabulary coordinates; it does **not**
 demonstrably transport a concept to unboosted coordinates, and it behaves as
-a **stable, context-insensitive lexical bias** (dynamic recomputation gives no
+a **largely stable lexical bias under the tested static and dynamic
+recomputation procedures** (dynamic recomputation gives no
 gain).
 
 ---
@@ -85,7 +87,7 @@ gain).
 **2/6** (transport). Normalization (raw/centered/z/perz) is **disposable** once
 the top-k + ranked magnitudes are selected.
 
-### 2. K is a sparse operating window, not a unique optimum
+### 2. K shows a sparse operating window, not a unique optimum
 Fine sweep (SEEDS=4, NTOK=60): in the tested sweep, efficacy appeared to
 emerge around **K≈150** (held-out rank 222→6) and persist through **K≈300**,
 with dilution at larger K. 30-seed confirmation:
@@ -110,9 +112,11 @@ it is not a unique behavioral optimum.
 | **1.00** | **0/30** | **23** | 1.000 | +0.195 |
 
 The pure row(W) projection (λ=1) is the **only tested dead cell** in this
-λ sweep; every λ<1 condition retained a nonzero out-of-row component and
-showed some transport. In these experiments, row-space escape appears
-necessary, but its magnitude did not predict efficacy. **Note on reading
+λ sweep; every λ<1 condition retained a nonzero out-of-row component, and
+each produced at least some observed transport in this 30-seed run. In this
+experiment, complete removal of the out-of-row component coincided with
+complete loss of observed transport; the magnitude of the remaining
+out-of-row component did not predict efficacy. **Note on reading
 this table:** the behavioral counts (3–6/30 for λ<1) are stochastic and
 effectively flat — the clean, reproducible invariant is the **geometric
 boundary**, not monotonic efficacy in λ.
@@ -150,7 +154,9 @@ The recomputed contrast barely moves and does not help ⇒ stable lexical bias.
 
 - No single load-bearing token (deleting the **single largest** coordinate survives).
 - Small top-k retention, random coordinates, and **shuffled magnitudes** all fail
-  ⇒ **coordinate identity AND coordinate↔magnitude association are causally necessary.**
+  ⇒ **the observed effect depends on both coordinate identity and the
+    association between coordinates and their ranked magnitudes, in the
+    tested setting.**
 - Test D: **5/30 transport vs. 0/30 baseline**; median held-out rank
   **160 → 4**; **8/30** seeds reach rank 0 (vs. 0/30 baseline).
 
@@ -160,13 +166,13 @@ The recomputed contrast barely moves and does not help ⇒ stable lexical bias.
 |---|---:|---:|---:|
 | FANTASY | town | 0/3 | **2/3** (K=150–250, rank 0) |
 | FANTASY | beach | 0/3 | ~0–1/3 |
-| SPACE | both | 0/3 | **0/3** (genuinely dead) |
+| SPACE | both | 0/3 | **0/3** (no observed transport) |
 | PIRATE | both | **1/3** | ~1/3 (baseline-contaminated) |
 
 Transport is **concept- and prompt-dependent**; some contrasts are immune.
-An earlier "single-coordinate spike" distinguisher was **honestly retired**
-after `metric_reconcile.py`: no cheap vector metric cleanly predicts success
-at K=200 in this 3-concept set.
+An earlier "single-coordinate spike" distinguisher was **discarded after
+`metric_reconcile.py` failed to support it**; no cheap vector metric cleanly
+predicts success at K=200 in this 3-concept set.
 
 ---
 
@@ -182,11 +188,13 @@ at K=200 in this 3-concept set.
   raw-vector sparsification with largest-coordinate-retention and random-dropout
   baselines — biggest overlap risk; measures refusal-ASR, not vocabulary
   transport, and runs none of the assignment controls below).
-- **Potentially novel:** *top-1..50 magnitude-coordinate retention of a raw
-  contrast vector FAILS while a distributed ranked ~150–300-coordinate window
-  SUCCEEDS*, demonstrated through the coordinated battery — magnitude-shuffle,
-  equal-weight, and largest-coordinate-ablation-with-survival — that prior work
-  does not apply to a raw contrast vector.
+- **Potentially novel in the tested setting:** *top-1..50
+  magnitude-coordinate retention of a raw contrast vector fails while a
+  distributed ranked ~150–300-coordinate window succeeds*, with
+  magnitude-shuffle, equal-weight, and largest-coordinate-ablation controls.
+  To our knowledge, the combination of these controls applied specifically
+  to raw contrast vectors and vocabulary transport has not been directly
+  tested in the cited prior work.
 - **Metric caveat:** results are for **vocabulary transport**. "Steerable but
   Not Decodable" (arXiv:2604.02608) shows steering can work while token
   projection is incoherent; generalization to behavioral metrics is open.
