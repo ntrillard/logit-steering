@@ -64,9 +64,10 @@ generation (`α = 2.0`, applied after step `SW0 = 20`, nucleus p = 0.9).
 > coordinates succeeds.**
 
 The apparent paradox is causal: **removing the largest coordinate does not
-remove the effect, while retaining only the largest coordinates does**. The
-signal is therefore neither a single load-bearing coordinate nor arbitrary
-sparsity; it depends on the **distributed ranked structure of the window**.
+remove the effect, while retaining only the largest coordinates does**.
+These results rule out a single load-bearing coordinate and several simple
+sparsification controls in the tested setting. They are consistent with the
+effect depending on the **distributed ranked structure of the window**.
 
 **Honest limits:** the intervention is **sparse ranked lexical logit
 steering** — it forces the selected vocabulary coordinates; it does **not**
