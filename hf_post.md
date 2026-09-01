@@ -21,13 +21,17 @@ library_name: transformers
 
 **Author:** N. Trillard — **September 2026**
 
-Steering vectors computed for the **`Qwen/Qwen2-1.5B`** causal language model
-(bf16, 152k vocabulary, hidden dim 1536, RMSNorm). These are the exact
-`dL = zscore(mean_tgt − mean_neu) · top200` vectors used in the
-experiments whose results are documented below and in the
-[GitHub repository](https://github.com/ntrillard/logit-steering). During
-generation, the stored vector is applied with `α = 2.0`, after step
-`SW0 = 20`, with nucleus sampling `p = 0.9`.
+This release studies which coordinates of a contrastive vocabulary-logit
+steering vector actually matter for steering. The main finding is that, in
+the tested setting, retaining the largest coordinates alone does not
+reproduce the effect: successful steering requires a broader,
+magnitude-ranked set of coordinates.
+
+The vectors steer the **`Qwen/Qwen2-1.5B`** causal language model (bf16,
+152k vocabulary, hidden dim 1536, RMSNorm): `dL = zscore(mean_tgt −
+mean_neu) · top200`, applied during generation with `α = 2.0`, after step
+`SW0 = 20`, with nucleus sampling `p = 0.9`. Results are documented in the
+[GitHub repository](https://github.com/ntrillard/logit-steering).
 
 ---
 
@@ -48,16 +52,9 @@ also used the Instruct variant `Qwen/Qwen2-1.5B-Instruct`.
 
 ## What this is
 
-A target-vs-neutral **vocabulary-logit contrast** — per-sentence z-scored,
-averaged, re-z-scored, **positive-masked to its top-200 ranked coordinates**,
-scaled to its working norm `N_REF ≈ 102` — added as a logit offset during
-generation (`α = 2.0`, applied after step `SW0 = 20`, nucleus p = 0.9).
-
-**The claim (supported, honest scope):**
-
-> In the tested setting, effective vocabulary transport appears to depend
-> on retaining a distributed, magnitude-ranked window of coordinates from the
-> vocabulary-logit contrast.
+**These interventions provide causal evidence that, in the tested setting,
+effective vocabulary transport depends on retaining a distributed,
+magnitude-ranked window of coordinates from the vocabulary-logit contrast.**
 
 > **In the tested FANTASY/town setting, retaining only the top 1–50 magnitude
 > coordinates produced no observed transport in the tested runs, whereas a
@@ -79,6 +76,15 @@ recomputation procedures** (dynamic recomputation gives no
 gain).
 
 ---
+
+## Evaluation
+
+**Transport** is counted when the generated text (a) contains at least one
+held-out target word, stem-matched and case-normalized, and (b) is not
+degenerate: no repeated-token run of length ≥ 6 and type/token ratio > 0.6.
+`medMinR` is the median over seeds of the minimum rank of any held-out
+target token in the steered logit ordering over generated steps. Full
+evaluation code and per-seed outputs are in the repository.
 
 ## Key results (all on Qwen2-1.5B, SEEDS = 30 unless noted)
 
@@ -121,15 +127,16 @@ as the relevant observation.
 | 0.75 | 6/30 | 0 | 0.263 | +0.942 |
 | **1.00** | **0/30** | **23** | 1.000 | +0.195 |
 
-The pure row(W) projection (λ=1) is the **only tested dead cell** in this
-λ sweep; every λ<1 condition retained a nonzero out-of-row component, and
-each produced at least some observed transport in this 30-seed run. In this
-experiment, complete removal of the out-of-row component coincided with
-complete loss of observed transport; the magnitude of the remaining
-out-of-row component did not predict efficacy. **Note on reading
-this table:** the behavioral counts (3–6/30 for λ<1) are stochastic and
-effectively flat. The clearest pattern in this experiment is the geometric
-boundary, rather than monotonic efficacy in λ.
+**The strongest geometric observation is a sharp boundary at complete
+projection into row(W):** every λ<1 condition retained a nonzero
+out-of-row component and produced at least some observed transport in this
+30-seed run, whereas the pure row(W) projection (λ=1) produced none in 30
+seeds. In this experiment, complete removal of the out-of-row component
+coincided with complete loss of observed transport, and the magnitude of
+the remaining out-of-row component did not predict efficacy. **Note on
+reading this table:** the behavioral counts (3–6/30 for λ<1) are stochastic
+and effectively flat. The clearest pattern in this experiment is the
+geometric boundary, rather than monotonic efficacy in λ.
 
 ### 4. Semantic vs. lexical (neighbor_probe)
 
@@ -149,9 +156,10 @@ boundary, rather than monotonic efficacy in λ.
 | DYN_PREFIX (recompute per prefix) | 1/30 | 2 | **+0.955** |
 | DYN_SELF (self next-token contrast) | 0/30 | 71 | **+0.013** |
 
-Under these tested recomputation procedures, the contrast remains highly
-similar to the static vector, and dynamic recomputation did not improve
-transport. This is consistent with a largely stable lexical bias.
+Under the tested recomputation procedures, the contrast remained highly
+similar to the static vector and dynamic recomputation did not improve
+transport. This is consistent with the intervention acting primarily as a
+stable lexical bias in this setting.
 
 ### 6. Ranking causality (retention/ablation ladder) + 30-seed confirmation
 
@@ -171,6 +179,9 @@ transport. This is consistent with a largely stable lexical bias.
     tested setting.**
 - Test D: **5/30 transport vs. 0/30 baseline**; median held-out rank
   **160 → 4**; **8/30** seeds reach rank 0 (vs. 0/30 baseline).
+- The behavioral effect is sparse across seeds: the intervention changes the
+  relevant ranking dramatically, but only a minority of stochastic
+  generations satisfy the transport criterion.
 
 ### 7. Generalization (Test A, baseline-corrected, SEEDS=3)
 
@@ -181,7 +192,8 @@ transport. This is consistent with a largely stable lexical bias.
 | SPACE | both | 0/3 | **0/3** (no observed transport) |
 | PIRATE | both | **1/3** | ~1/3 (baseline-contaminated) |
 
-Transport is **concept- and prompt-dependent**; some contrasts are immune.
+Transport is **concept- and prompt-dependent**; some tested contrasts showed
+no observed transport.
 An earlier "single-coordinate spike" distinguisher was **discarded after
 `metric_reconcile.py` failed to support it**; no cheap vector metric cleanly
 predicts success at K=200 in this 3-concept set.
@@ -199,14 +211,13 @@ predicts success at K=200 in this 3-concept set.
   observation); **arXiv:2604.08524** ("What Drives Representation Steering?",
   raw-vector sparsification with largest-coordinate-retention and random-dropout
   baselines — biggest overlap risk; measures refusal-ASR, not vocabulary
-  transport, and runs none of the assignment controls below).
+  transport).
 - **Potentially novel in the tested setting:** *top-1..50
   magnitude-coordinate retention of a raw contrast vector fails while a
   distributed ranked ~150–300-coordinate window succeeds*, with
   magnitude-shuffle, equal-weight, and largest-coordinate-ablation controls.
-  To our knowledge, the combination of these controls applied specifically
-  to raw contrast vectors and vocabulary transport has not been directly
-  tested in the cited prior work.
+  I did not find these controls applied together to raw vocabulary-logit
+  contrasts in the cited literature.
 - **Metric caveat:** results are for **vocabulary transport**. "Steerable but
   Not Decodable" (arXiv:2604.02608) shows steering can work while token
   projection is incoherent; generalization to behavioral metrics is open.
