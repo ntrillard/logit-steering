@@ -481,10 +481,58 @@ the static vector (cos +0.955) and does not improve transport (1/30 vs 3/30).
 A self-referential contrast (the model's own next-token distribution) is
 *orthogonal* to the concept direction (+0.013) and inert (0/30, rank 71).
 
-**Conclusion.** The operation is a **fixed sparse lexical bias**, not an
-adaptive steering mechanism. It does not track the evolving prefix — its
-efficacy comes entirely from the static ranked-coordinate pattern computed
-once. This closes the adaptive-vs-fixed confound: no dynamic recomputation
+**Conclusion.** The successful intervention does **not require dynamic
+adaptation**, and the effective intervention behaves as a **stable,
+context-insensitive lexical bias under this setup**. Recomputing the same
+target-vs-neutral contrast from each prefix yields a direction highly
+similar to the static vector (cos 0.955) and does not improve transport; a
+self-adaptive contrast derived from the current generation state yields a
+nearly orthogonal direction (+0.013) and fails. No dynamic recomputation
 reproduces or improves the static result.
 
 *File:* `dynamic_contrast.py`.
+
+---
+
+## Part VII — Generalization: concept/prompt dependence (`generalize.py`)
+
+Is the sparse ranked steering a general technique or specific to the fantasy
+contrast? Test A (3 concepts x 2 prompts x {NONE + 5 K}, SEEDS=3, NTOK=40,
+baseline-corrected):
+
+```
+concept  prompt  NONE base  K=100 150  200  250  300
+FANTASY  beach   0/3  r238  0/3   0/3  0/3  1/3  1/3
+FANTASY  town    0/3  r53   0/3   2/3  2/3  2/3  1/3   <- clean winner
+SPACE    beach   0/3  r143  0/3   0/3  0/3  0/3  0/3   <- dead
+SPACE    town    0/3  r40   0/3   0/3  1/3  0/3  0/3   <- dead
+PIRATE   beach   1/3! r6    2/3   2/3  1/3  1/3  1/3   <- baseline-contam
+PIRATE   town    1/3! r23   0/3   0/3  1/3  0/3  1/3   <- ~baseline
+```
+
+- **PIRATE held-out words appear 1/3 unsteered** (ship/captain/sea/gold are
+  natural vocabulary) — its apparent transport is baseline contamination.
+- **SPACE is genuinely dead** (0/3 baseline, 0/3 steered).
+- **FANTASY/town is the clean winner** (0/3 -> 2/3, rank ->0); the beach
+  prompt suppresses it -> prompt-dependence.
+
+**What predicts success?** Vector diagnostics (DIAG mode) of each contrast:
+
+```
+concept   maxAbsFrac   R_row(200)   cos(K,200)   verdict
+FANTASY   0.847        0.038        1.000        structured contrast (85% top-coord)
+SPACE     1.000        0.060        1.000        single-token spike
+PIRATE    1.000        0.060        1.000        single-token spike
+```
+
+`maxAbsFrac` = share of top-K magnitude held by the single largest coordinate.
+R_row and cos are nearly identical across concepts, so row-space escape and
+alignment do NOT discriminate success. The discriminator is **contrast
+concentration**: a working contrast spreads ranked mass across coordinates
+(FANTASY, max share 0.85); a dead contrast collapses to a single vocabulary
+coordinate (SPACE/PIRATE, share 1.00), destroying the sparse ranked
+structure that is the mechanism. Test B therefore predicts: *vector-space
+concentration of the target-vs-neutral logit contrast is a cheap diagnostic
+for whether sparse ranked logit steering will work.*
+
+*Files:* `generalize.py` (Test A + DIAG).
