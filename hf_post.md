@@ -1,0 +1,217 @@
+---
+license: cc-by-4.0
+language:
+  - en
+tags:
+  - steering-vectors
+  - activation-steering
+  - logit-steering
+  - interpretability
+  - mechanistic-interpretability
+  - causal-analysis
+  - llm-control
+pipeline_tag: text-generation
+model_type: transformer
+base_model: Qwen/Qwen2-1.5B
+inference: false
+library_name: transformers
+---
+
+# Sparse Ranked Logit Steering — Vector Suite & Findings
+
+**Author:** N. Trillard — **September 2026**
+
+Steering vectors computed for the **`Qwen/Qwen2-1.5B`** causal language model
+(bf16, 152k vocabulary, hidden dim 1536, RMSNorm). These are the exact
+`dL = α · zscore(mean_tgt − mean_neu) · top200` vectors that produce the
+reproducible vocabulary-transport results documented below and in the
+[GitHub repository](https://github.com/ntrillard/logit-steering).
+
+---
+
+## Links
+
+| Asset | URL |
+|---|---|
+| Technique repo (code + writeup) | https://github.com/ntrillard/logit-steering |
+| Historical / negative-control lineage (sphere investigation) | https://github.com/ntrillard/transformer-geometry |
+| Base model (this card's vectors steer it) | https://huggingface.co/Qwen/Qwen2-1.5B |
+| Main writeup (Parts I–IX) | [writeup-orthogonal-complement.md](https://github.com/ntrillard/logit-steering/blob/master/writeup-orthogonal-complement.md) |
+
+**Base model** used throughout: `Qwen/Qwen2-1.5B`
+([model card](https://huggingface.co/Qwen/Qwen2-1.5B)); earlier discovery work
+also used the Instruct variant `Qwen/Qwen2-1.5B-Instruct`.
+
+---
+
+## What this is
+
+A target-vs-neutral **vocabulary-logit contrast** — per-sentence z-scored,
+averaged, re-z-scored, **positive-masked to its top-200 ranked coordinates**,
+scaled to its working norm `N_REF ≈ 102` — added as a logit offset during
+generation (`α = 2.0`, applied after step `SW0 = 20`, nucleus p = 0.9).
+
+**The claim (supported, honest scope):**
+
+> The generatively effective operation is: take the vocabulary readout
+> contrast, select its top-200 positive coordinates with their ranked
+> magnitudes, and apply the resulting sparse vector as a logit offset. This
+> vector necessarily escapes `row(W)` (masking breaks representability), and
+> that *coordinated, distributed, magnitude-ranked* object — not any single
+> axis (sparsity alone, magnitudes alone, row-escape alone) — transports.
+
+**Honest limits:** the intervention is **sparse ranked lexical logit
+steering** — it forces the selected vocabulary coordinates; it does **not**
+demonstrably transport a concept to unboosted coordinates, and it behaves as
+a **stable, context-insensitive lexical bias** (dynamic recomputation gives no
+gain).
+
+---
+
+## Key results (all on Qwen2-1.5B, SEEDS = 30 unless noted)
+
+### 1. Causal factorial (mechanism matrix, SEEDS = 6)
+`rand200` / `magmatch200` / `shuffle200` / `equal200` / `rowW_proj`: **0/6** (dead).
+`raw_t200` / `perz_t200` (correct coordinates × ranked magnitudes × out-of-row):
+**2/6** (transport). Normalization (raw/centered/z/perz) is **disposable** once
+the top-k + ranked magnitudes are selected.
+
+### 2. K is a sparse operating window, not a unique optimum
+Fine sweep (SEEDS=4, NTOK=60): sharp onset at **K≈150** (held-out rank 222→6),
+working regime **150–300**, dilution >300. 30-seed confirmation:
+
+| K | transport | medMinR | R_row | cos→dLref |
+|---|---:|---:|---:|---:|
+| 150 | 2/30 | 1 | 0.033 | +0.890 |
+| **200** | 3/30 | 0 | 0.038 | **+1.000** |
+| 250 | 3/30 | 1 | 0.043 | +0.913 |
+
+K=200 is the maximum-alignment point, not a unique behavioral optimum.
+
+### 3. K × λ causal surface (behavioral discontinuity at the row-space boundary)
+
+| λ | transport | medMinR | R_row | cos_ref |
+|---|---:|---:|---:|---:|
+| 0.00 | 4/30 | 2 | 0.000 | +0.981 |
+| 0.25 | 4/30 | 1 | 0.004 | +0.992 |
+| 0.50 | 3/30 | 0 | 0.038 | +1.000 |
+| 0.75 | 6/30 | 0 | 0.263 | +0.942 |
+| **1.00** | **0/30** | **23** | 1.000 | +0.195 |
+
+The pure row(W) projection is the **unique dead cell**; any nonzero out-of-row
+residual preserves the effect. Row-space escape is necessary; its *amount*
+does not scale efficacy.
+
+### 4. Semantic vs. lexical (neighbor_probe)
+
+| probe | UNSTEERED | STEERED |
+|---|---:|---:|
+| LEX (boosted top-200 coords) | 0/30, rank 45 | **27/30, rank 0** |
+| SEM (unboosted semantic neighbors) | 0/30, rank 188 | 0/30, rank 172 |
+| UNR (unboosted unrelated) | 18/30, rank 0 | 16/30, rank 1 |
+
+**Lexical forcing, not semantic transport.**
+
+### 5. Static vs. adaptive (dynamic_contrast)
+
+| condition | transport | medMinR | cos vs static |
+|---|---:|---:|---:|
+| STATIC | 3/30 | 0 | (reference) |
+| DYN_PREFIX (recompute per prefix) | 1/30 | 2 | **+0.955** |
+| DYN_SELF (self next-token contrast) | 0/30 | 71 | **+0.013** |
+
+The recomputed contrast barely moves and does not help ⇒ stable lexical bias.
+
+### 6. Ranking causality (retention/ablation ladder) + 30-seed confirmation
+
+| condition | transport (SEEDS=3) | SEEDS=30 (Test D) |
+|---|---:|---:|
+| NONE (baseline) | 0/3 | **0/30, rank 160** |
+| top1 / 5 / 10 / 20 / 50 | 0/3 | 0/30 (rank ~141–271) |
+| **full200** | **2/3** | **5/30, rank 4** |
+| full200 − largest coord | 2/3 | 4/30 |
+| full200 − random coord | 2/3 | 5/30 |
+| rand50 / top50_shuf | 0/3 | 0/30 |
+
+- No single load-bearing token (deleting the **single largest** coordinate survives).
+- Small top-k retention, random coordinates, and **shuffled magnitudes** all fail
+  ⇒ **coordinate identity AND coordinate↔magnitude association are causally necessary.**
+- Test D: **5/30 vs 0/30** baseline (p≈0.05, exact binomial one-sided);
+  median held-out rank **160 → 4**; **8/30** seeds reach rank 0 (baseline 0/30).
+
+### 7. Generalization (Test A, baseline-corrected, SEEDS=3)
+
+| concept | prompt | NONE base | best steered |
+|---|---:|---:|---:|
+| FANTASY | town | 0/3 | **2/3** (K=150–250, rank 0) |
+| FANTASY | beach | 0/3 | ~0–1/3 |
+| SPACE | both | 0/3 | **0/3** (genuinely dead) |
+| PIRATE | both | **1/3** | ~1/3 (baseline-contaminated) |
+
+Transport is **concept- and prompt-dependent**; some contrasts are immune.
+An earlier "single-coordinate spike" distinguisher was **honestly retired**
+after `metric_reconcile.py`: no cheap vector metric cleanly predicts success
+at K=200 in this 3-concept set.
+
+---
+
+## Novelty calibration (from 3 targeted literature searches, Sep 2026)
+
+- **Not novel:** sparse steering itself — CAA (Turner et al., arXiv:2308.10248);
+  SAS (Bayat et al., arXiv:2503.00177); SAE-SSV (He et al., EMNLP'25,
+  2025.emnlp-main.112); CAS-BiPO (Doan et al., EACL'26 Finds,
+  2026.findings-eacl.57).
+- **Adjacent / must-cite:** ActAdd **Appendix H** (non-monotonic partial-vector
+  retention; for one prompt 70% of dims > 100% — closest prior window
+  observation); **arXiv:2604.08524** ("What Drives Representation Steering?",
+  raw-vector sparsification with largest-coordinate-retention and random-dropout
+  baselines — biggest overlap risk; measures refusal-ASR, not vocabulary
+  transport, and runs none of the assignment controls below).
+- **Potentially novel:** *top-1..50 magnitude-coordinate retention of a raw
+  contrast vector FAILS while a distributed ranked ~150–300-coordinate window
+  SUCCEEDS*, demonstrated through the coordinated battery — magnitude-shuffle,
+  equal-weight, and largest-coordinate-ablation-with-survival — that prior work
+  does not apply to a raw contrast vector.
+- **Metric caveat:** results are for **vocabulary transport**. "Steerable but
+  Not Decodable" (arXiv:2604.02608) shows steering can work while token
+  projection is incoherent; generalization to behavioral metrics is open.
+
+**Not claimed:** a validated universal screening law (n=3 contrasts), a robust
+high-yield steering *algorithm* (5/30 absolute transport rate), or semantic
+(concept-level) transport.
+
+---
+
+## Files in this posting
+
+- `dL_fantasy_top200.pt` — the working contrast vector for the FANTASY/town
+  cell used in all headline results (α=2.0, N_REF≈102).
+- `dL_*_top200.pt` / `dL_*_topK.pt` — additional concept vectors (SPACE, PIRATE,
+  royal) and K-window variants (150/200/250/300), norm-matched to N_REF.
+- `README.md` (this card), `writeup-orthogonal-complement.md`, and the raw
+  per-seed logs (`logs/*`) so every number above is checkable.
+
+## Reproduce
+
+```bash
+git clone https://github.com/ntrillard/logit-steering
+cd logit-steering
+
+SEEDS=30 python3 mechanism_matrix.py 0                                  # causal factorial
+LAMBDA=1 KLIST=200 LLIST=0,0.25,0.5,0.75,1 SEEDS=30 python3 mechanism_matrix.py 0
+SEEDS=30 NTOK=120 python3 neighbor_probe.py                             # lexical-vs-semantic
+SEEDS=30 python3 dynamic_contrast.py                                    # static vs adaptive
+SEEDS=3 NTOK=40 python3 generalize.py                                   # concepts × prompts
+CONCEPT=FANTASY SEEDS=30 NTOK=40 COND=NONE,full200 python3 rank_causality.py  # Test D
+
+# model: Qwen/Qwen2-1.5B (HF transformers, bf16, device_map=auto, no quantization)
+```
+
+---
+
+## Scope & license
+
+This is a research finding (mechanistic analysis of steering vector
+coordinate structure), not a production safety control. It demonstrates a
+reproducible, causally constrained phenomenon on one model family; it is not
+a general steering law. CC BY 4.0.
