@@ -23,9 +23,11 @@ library_name: transformers
 
 Steering vectors computed for the **`Qwen/Qwen2-1.5B`** causal language model
 (bf16, 152k vocabulary, hidden dim 1536, RMSNorm). These are the exact
-`dL = α · zscore(mean_tgt − mean_neu) · top200` vectors used in the
+`dL = zscore(mean_tgt − mean_neu) · top200` vectors used in the
 experiments whose results are documented below and in the
-[GitHub repository](https://github.com/ntrillard/logit-steering).
+[GitHub repository](https://github.com/ntrillard/logit-steering). During
+generation, the stored vector is applied with `α = 2.0`, after step
+`SW0 = 20`, with nucleus sampling `p = 0.9`.
 
 ---
 
@@ -57,8 +59,9 @@ generation (`α = 2.0`, applied after step `SW0 = 20`, nucleus p = 0.9).
 > on retaining a distributed, magnitude-ranked window of coordinates from the
 > vocabulary-logit contrast.
 
-> **Top‑1…50 fails while a distributed ranked 150–300-coordinate window
-> succeeds.**
+> **In the tested FANTASY/town setting, retaining only the top 1–50 magnitude
+> coordinates fails, while a distributed ranked window of roughly 150–300
+> coordinates succeeds.**
 
 The apparent paradox is causal: **removing the largest coordinate does not
 remove the effect, while retaining only the largest coordinates does**. The
