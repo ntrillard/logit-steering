@@ -547,3 +547,50 @@ model's own natural continuation) is open; Test C probes the causal ranking
 question directly.
 
 *Files:* `generalize.py` (Test A + DIAG).
+
+---
+
+## Part VIII — Ranking causality (`rank_causality.py`, Test C)
+
+Does the *ranked coordinate structure* have causal leverage, or is any
+sparse injection enough? Retention/ablation ladder at SEEDS=3, NTOK=40,
+all vectors norm-matched to N_REF:
+
+```
+FANTASY (quiet-town prompt):
+  NONE           0/3  rank 53    <- baseline
+  top1           0/3  rank 141
+  top5           0/3  rank 141
+  top10          0/3  rank 141
+  top20          0/3  rank 141
+  top50          0/3  rank 53
+  full200        2/3  rank 0     <- works
+  full_minus_t1  2/3  rank 0     <- remove LARGEST coord: still works
+  full_minus_rd  2/3  rank 0     <- remove random coord: still works
+  rand50         0/3  rank 141   <- random coords dead
+  top50_shuf     0/3  rank 53    <- shuffled magnitudes dead
+
+PIRATE (beach prompt):
+  NONE           1/3  rank 6     <- baseline itself transports (contam.)
+  top1..top50    0/3  rank 6
+  full200        1/3  rank 3     <- AT baseline, no steering gain
+  full_minus_t1  1/3  rank 3
+  full_minus_rd  1/3  rank 3
+  rand50/shuf    0/3  rank 6
+```
+
+**Reading.** For the clean winner (FANTASY):
+- full200 beats baseline (2/3 vs 0/3).
+- Deleting the single largest coordinate (t1) or a random one does NOT
+  reduce transport (2/3) — the signal is distributed over ~200 ranked
+  coordinates; no single load-bearing token.
+- Small retention (top1..top50) is dead — the sparse ranked structure needs
+  the full ~150+ window, matching the K-sweep.
+- rand50 / top50_shuf are dead — coordinate identity and magnitude
+  association are both causal.
+
+**PIRATE confirms the baseline-contamination diagnosis:** full200 = NONE =
+1/3 — no genuine intervention gain to mediate; the apparent transport is
+natural vocabulary. Consistent with Part VII.
+
+*File:* `rank_causality.py`.

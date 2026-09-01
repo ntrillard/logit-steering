@@ -131,7 +131,9 @@ def main():
             return None
         if name == 'full200':
             v = torch.zeros(V); v[top_idx[:K]] = perz[top_idx[:K]]
-        elif name.startswith('top'):
+        elif name == 'top50_shuf':
+            v = torch.zeros(V); v[top_idx[:50]] = v50[perm]
+        elif name == 'top1' or name == 'top5' or name == 'top10' or name == 'top20' or name == 'top50':
             k = int(name[3:])
             v = torch.zeros(V); v[top_idx[:k]] = perz[top_idx[:k]]
         elif name == 'full_minus_t1':
