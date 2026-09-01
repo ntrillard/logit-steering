@@ -348,6 +348,46 @@ transport (2/4 → 1/4 → 0/4).
 1.00    0/30        23        1.000   +0.195
 ```
 
+**Is K=200 a narrow optimum? No — a broad operating window.** A fine-grained
+K sweep (SEEDS=4, NTOK=60, K in 25..500) shows the peak is a transition
+plateau, not a single-point island:
+
+```
+ K      transport  medMinR  R_row  cos->dLfull
+ 25     0/4        305      0.018  +0.425
+ 50     0/4        274      0.022  +0.569
+ 75     0/4        269      0.025  +0.671
+100     0/4        262      0.027  +0.754
+125     0/4        222      0.030  +0.826
+150     1/4          6      0.033  +0.890   <- rank collapse (262 -> 6)
+175     0/4          8      0.035  +0.947
+200     1/4         11      0.038  +1.000   <- cos peak
+225     2/4         17      0.041  +0.953
+250     1/4         21      0.043  +0.913
+300     1/4         25      0.048  +0.849
+400     1/4         35      0.057  +0.758
+500     0/4         45      0.065  +0.695
+```
+
+- **Sharp onset** at K~150: held-out rank collapses from >=222 to <=8.
+- **Broad working regime** K in 150-300 (rank <=25, cos >=0.85); cos peaks at
+  exactly K=200 but the plateau, not the peak, is the reliable region.
+- **Gradual dilution** for K>300: rank drifts 25->45, cos decays 0.85->0.70.
+
+**30-seed confirmation** (K in {150,200,250}, NTOK=120):
+
+```
+ K      transport  medMinR  R_row  cos->dLfull
+150     2/30       1        0.033  +0.890
+200     3/30       0        0.038  +1.000
+250     3/30       1        0.043  +0.913
+```
+
+Transport is flat 2-3/30 across the plateau with medMinR 0-1; K=200 is not
+suspiciously singular. Note the plateau itself is a property of *this*
+vocabulary structure (single contrast, one template). Whether it shifts with
+prompt/concept/seed is an open question.
+
 **Causal reading (careful, not overclaimed).** The clean claim is *not* a
 smooth monotonic dose-response — λ=0.75 peaking at 6/30 is within binomial
 noise (n=30). The causal variable is **existence vs. absence of the

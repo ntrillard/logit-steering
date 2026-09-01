@@ -5,6 +5,30 @@ Causal investigation of **sparse ranked logit steering** in a small LM
 restricted to a sparse set of vocabulary coordinates (~K=200) while preserving
 their relative logit ordering and magnitude.
 
+## Scientific lineage
+
+This repo is the **technique repo**. The mechanism was discovered through a
+**sphere/geometry investigation** (`github.com/ntrillard/transformer-geometry`
+— preserved intact as the historical/control line, not rewritten). The
+trajectory:
+
+```
+sphere hidden-direction steering  ->  falsified as the mechanism
+      |
+      +--> logit-space contrast (v4/v5, gen_geom)  ->  works
+                 |
+                 +--> causal dissection: sparse coords x ranked mags x row(W)-escape
+                 |         |
+                 |         +--> K x lambda causal surface (behavioral discontinuity
+                 |              at the row-space boundary; lambda=1 unique dead cell)
+                 |
+                 +--> semantic-vs-lexical probe: LEXICAL forcing, not semantic
+                      transport (neighbor_probe.py)
+```
+
+The sphere work is the **discovery/negative-control chapter**; the logit
+intervention is the technique this repo characterizes.
+
 ## The claim
 
 > The generatively effective operation is: take the vocabulary readout

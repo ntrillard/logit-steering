@@ -228,7 +228,7 @@ def main():
             return ok, minr
 
         print(f'  {"K":>6} {"transport":>9} {"medMinR":>8} {"R_row":>7}  cos->dLfull')
-        for kk in [10,25,50,100,200,500,1000,2000,0]:
+        for kk in KSWEEP:
             R = 0; mrs = []
             for s in range(SEEDS):
                 ok, mr = genK(kk, SEEDBASE + s)
