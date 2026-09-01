@@ -53,18 +53,17 @@ generation (`α = 2.0`, applied after step `SW0 = 20`, nucleus p = 0.9).
 
 **The claim (supported, honest scope):**
 
-> In the tested setting, the generatively effective operation appears to be:
-> take the vocabulary readout contrast, select its top-200 positive
-> coordinates with their ranked magnitudes, and apply the resulting sparse
-> vector as a logit offset. This vector necessarily escapes `row(W)`
-> (masking breaks representability), and that *coordinated, distributed,
-> magnitude-ranked* object — not any single axis (sparsity alone, magnitudes
-> alone, row-escape alone) — transports.
-
-**The single most important sentence in this card:**
+> In the tested setting, effective vocabulary transport appears to depend
+> on retaining a distributed, magnitude-ranked window of coordinates from the
+> vocabulary-logit contrast.
 
 > **Top‑1…50 fails while a distributed ranked 150–300-coordinate window
 > succeeds.**
+
+The apparent paradox is causal: **removing the largest coordinate does not
+remove the effect, while retaining only the largest coordinates does**. The
+signal is therefore neither a single load-bearing coordinate nor arbitrary
+sparsity; it depends on the **distributed ranked structure of the window**.
 
 **Honest limits:** the intervention is **sparse ranked lexical logit
 steering** — it forces the selected vocabulary coordinates; it does **not**
@@ -146,8 +145,8 @@ The recomputed contrast barely moves and does not help ⇒ stable lexical bias.
 - No single load-bearing token (deleting the **single largest** coordinate survives).
 - Small top-k retention, random coordinates, and **shuffled magnitudes** all fail
   ⇒ **coordinate identity AND coordinate↔magnitude association are causally necessary.**
-- Test D: **5/30 vs 0/30** baseline (p≈0.05, exact binomial one-sided);
-  median held-out rank **160 → 4**; **8/30** seeds reach rank 0 (baseline 0/30).
+- Test D: **5/30 transport vs. 0/30 baseline**; median held-out rank
+  **160 → 4**; **8/30** seeds reach rank 0 (vs. 0/30 baseline).
 
 ### 7. Generalization (Test A, baseline-corrected, SEEDS=3)
 
