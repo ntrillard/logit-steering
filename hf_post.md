@@ -65,10 +65,10 @@ generation (`α = 2.0`, applied after step `SW0 = 20`, nucleus p = 0.9).
 
 The apparent paradox is causal: **removing the largest coordinate does not
 remove the effect, while retaining only the largest coordinates does**.
-These results rule out a single load-bearing coordinate and disfavor
-several simple sparsification explanations in the tested setting. They are
-consistent with the
-effect depending on the **distributed ranked structure of the window**.
+These results rule out a single load-bearing coordinate and disfavor several
+simple sparsification explanations in the tested setting. They are consistent
+with the effect depending on the **distributed ranked structure of the
+window**.
 
 **Honest limits:** the intervention is **sparse ranked lexical logit
 steering** — it forces the selected vocabulary coordinates; it does **not**
@@ -82,10 +82,12 @@ gain).
 ## Key results (all on Qwen2-1.5B, SEEDS = 30 unless noted)
 
 ### 1. Causal factorial (mechanism matrix, SEEDS = 6)
-`rand200` / `magmatch200` / `shuffle200` / `equal200` / `rowW_proj`: **0/6** (dead).
+`rand200` / `magmatch200` / `shuffle200` / `equal200` / `rowW_proj`: **0/6**
+(no observed transport).
 `raw_t200` / `perz_t200` (correct coordinates × ranked magnitudes × out-of-row):
-**2/6** (transport). Normalization (raw/centered/z/perz) is **disposable** once
-the top-k + ranked magnitudes are selected.
+**2/6** (transport). Normalization (raw/centered/z/perz) **did not
+materially change the observed result** once the top-k coordinates and
+their ranked magnitudes were fixed.
 
 ### 2. K shows a sparse operating window, not a unique optimum
 Fine sweep (SEEDS=4, NTOK=60): in the tested sweep, efficacy appeared to
@@ -101,7 +103,7 @@ with dilution at larger K. 30-seed confirmation:
 K=200 has the highest alignment with the reference vector in this sweep;
 it is not a unique behavioral optimum.
 
-### 3. K × λ causal surface (behavioral discontinuity at the row-space boundary)
+### 3. K × λ surface: behavioral discontinuity at the row-space boundary
 
 | λ | transport | medMinR | R_row | cos_ref |
 |---|---:|---:|---:|---:|
@@ -199,8 +201,9 @@ predicts success at K=200 in this 3-concept set.
   Not Decodable" (arXiv:2604.02608) shows steering can work while token
   projection is incoherent; generalization to behavioral metrics is open.
 
-**Not claimed:** a validated universal screening law (n=3 contrasts), a robust
-high-yield steering *algorithm* (5/30 absolute transport rate), or semantic
+**Not claimed:** a validated universal screening law (generalization tested
+on only 3 contrasts), a robust high-yield steering *algorithm* (5/30
+absolute transport rate), or semantic
 (concept-level) transport.
 
 ---
