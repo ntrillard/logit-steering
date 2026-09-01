@@ -594,3 +594,31 @@ PIRATE (beach prompt):
 natural vocabulary. Consistent with Part VII.
 
 *File:* `rank_causality.py`.
+
+**Test D — independent 30-seed confirmation** (FANTASY / town / K=200 /
+NTOK=40, prespecified winner, baseline NONE, fixed seeds 0-29):
+
+```
+condition  transport  median minRank  meanRank
+NONE       0/30       160              (stuck 50-400)
+full200    5/30       4                9.1
+```
+
+```
+full200 per-seed (seed: minRank)  [transport on seeds 0,1,3,5,26]
+  0: 0   1: 0   2: 0   3: 0   4: 10   5: 0   6: 15   7: 0   8: 4   9: 3
+ 10:17  11:26  12: 7  13:15  14: 4  15: 3  16: 2  17:36  18:20  19:10
+ 20:15  21: 2  22:44  23: 3  24: 9  25: 1  26:0   27:17  28: 9  29: 0
+```
+
+- **Transport 5/30 vs 0/30** (baseline is a clean null floor). The 5-vs-0
+  split has p~0.05 (exact binomial one-sided).
+- **Rank distribution shifts massively**: median held-out rank 160 -> 4;
+  8/30 seeds reach rank 0 vs 0/30 at baseline. Even non-emitting steered
+  seeds lift the target vocabulary to low rank.
+- Statistically consistent with the cheap-screen 2-3/30 at SEEDS=3.
+
+**Confirmed clean progression:** contrast diagnostic -> successful concept ->
+causal coordinate ranking -> causal magnitude ordering -> distributed
+full-window mechanism -> independent 30-seed confirmation (0% baseline vs
+16.7% steered, with rank 160->4).

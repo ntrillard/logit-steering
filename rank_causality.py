@@ -210,7 +210,24 @@ def main():
         med = sorted(mrs)[SEEDS // 2] if mrs else -1
         tag = '  <- baseline' if name == 'NONE' else ''
         print(f'  {name:>14} {R:3d}/{SEEDS:<4} {med:8d}{tag}', flush=True)
-    print(f'[{time.time() - t0:.0f}s]')
+    only = [x.strip() for x in os.environ.get('COND', '').split(',') if x.strip()]
+    names = only if only else ['NONE', 'top1', 'top5', 'top10', 'top20', 'top50',
+                               'full200', 'full_minus_t1', 'full_minus_rd', 'rand50', 'top50_shuf']
+    for name in names:
+        R = 0; mrs = []; per_seed = []
+        vec = cond_vec(name)   # lazy: only one full-dim vector live at a time
+        for s in range(SEEDS):
+            ok, mr = gen(vec, SEEDBASE + s)
+            R += int(ok); mrs.append(mr); per_seed.append((SEEDBASE+s, ok, mr))
+        del vec
+        med = sorted(mrs)[SEEDS // 2] if mrs else -1
+        mean = sum(mrs)/max(1,len(mrs))
+        tag = '  <- baseline' if name == 'NONE' else ''
+        print(f'  {name:>14} {R:3d}/{SEEDS:<4} {med:8d}  meanR {mean:7.1f}{tag}', flush=True)
+        if only:
+            print(f'    per-seed (seed, transport, minRank):', flush=True)
+            for (sd, ok_, mr_) in per_seed:
+                print(f'      {sd:>3}  {int(ok_)}  {mr_:>8}', flush=True)
 
 
 if __name__ == '__main__':
