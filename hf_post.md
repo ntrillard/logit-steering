@@ -60,8 +60,9 @@ generation (`α = 2.0`, applied after step `SW0 = 20`, nucleus p = 0.9).
 > vocabulary-logit contrast.
 
 > **In the tested FANTASY/town setting, retaining only the top 1–50 magnitude
-> coordinates fails, while a distributed ranked window of roughly 150–300
-> coordinates succeeds.**
+> coordinates produced no observed transport in the tested runs, whereas a
+> distributed ranked window of roughly 150–300 coordinates produced transport
+> in a subset of runs.**
 
 The apparent paradox is causal: **removing the largest coordinate does not
 remove the effect, while retaining only the largest coordinates does**.
@@ -103,7 +104,14 @@ with dilution at larger K. 30-seed confirmation:
 K=200 has the highest alignment with the reference vector in this sweep;
 it is not a unique behavioral optimum.
 
-### 3. K × λ surface: behavioral discontinuity at the row-space boundary
+**Cross-test note:** K=200 produces 3/30 transport in this sweep, compared
+with 4/30 in the λ=0 condition and 5/30 in Test D. These conditions are
+closely related but are not identical experimental runs, and the differences
+are small enough to be consistent with stochastic variation. We therefore
+treat the recurring qualitative pattern — not the exact transport count —
+as the relevant observation.
+
+### 3. K × λ intervention surface: behavioral discontinuity at the row-space boundary
 
 | λ | transport | medMinR | R_row | cos_ref |
 |---|---:|---:|---:|---:|
@@ -120,8 +128,8 @@ experiment, complete removal of the out-of-row component coincided with
 complete loss of observed transport; the magnitude of the remaining
 out-of-row component did not predict efficacy. **Note on reading
 this table:** the behavioral counts (3–6/30 for λ<1) are stochastic and
-effectively flat — the clean, reproducible invariant is the **geometric
-boundary**, not monotonic efficacy in λ.
+effectively flat. The clearest pattern in this experiment is the geometric
+boundary, rather than monotonic efficacy in λ.
 
 ### 4. Semantic vs. lexical (neighbor_probe)
 
@@ -141,7 +149,9 @@ boundary**, not monotonic efficacy in λ.
 | DYN_PREFIX (recompute per prefix) | 1/30 | 2 | **+0.955** |
 | DYN_SELF (self next-token contrast) | 0/30 | 71 | **+0.013** |
 
-The recomputed contrast barely moves and does not help ⇒ stable lexical bias.
+Under these tested recomputation procedures, the contrast remains highly
+similar to the static vector, and dynamic recomputation did not improve
+transport. This is consistent with a largely stable lexical bias.
 
 ### 6. Ranking causality (retention/ablation ladder) + 30-seed confirmation
 
@@ -154,7 +164,7 @@ The recomputed contrast barely moves and does not help ⇒ stable lexical bias.
 | full200 − random coord | 2/3 | 5/30 |
 | rand50 / top50_shuf | 0/3 | 0/30 |
 
-- No single load-bearing token (deleting the **single largest** coordinate survives).
+- No single load-bearing coordinate (deleting the **single largest** coordinate survives).
 - Small top-k retention, random coordinates, and **shuffled magnitudes** all fail
   ⇒ **the observed effect depends on both coordinate identity and the
     association between coordinates and their ranked magnitudes, in the
