@@ -96,7 +96,8 @@ with dilution at larger K. 30-seed confirmation:
 | **200** | 3/30 | 0 | 0.038 | **+1.000** |
 | 250 | 3/30 | 1 | 0.043 | +0.913 |
 
-K=200 is the maximum-alignment point, not a unique behavioral optimum.
+K=200 has the highest alignment with the reference vector in this sweep;
+it is not a unique behavioral optimum.
 
 ### 3. K × λ causal surface (behavioral discontinuity at the row-space boundary)
 
