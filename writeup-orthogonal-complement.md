@@ -537,14 +537,17 @@ PIRATE    0.0083             1.0000                  0.060         1.000
   a *placement* fact, not a concentration fact.
 - R_row and cos do not discriminate either (nearly identical).
 
-**Corrected verdict.** The cheap vector diagnostics in this battery do NOT
-cleanly predict success: no single-coordinate concentration or row-space
-metric separates FANTASY (winner) from SPACE (dead) / PIRATE
-(baseline-contaminated) at K=200. The observable differences are behavioral
-(baseline contamination), not geometric, in this set. Whether a sharper
-contrast-level predictor exists (e.g. overlap of the top-200 with the
-model's own natural continuation) is open; Test C probes the causal ranking
-question directly.
+**Corrected verdict.** The "single-coordinate spike" reading of the
+diagonstics was WRONG (retired in this revision): the true concentration
+metric m1 = max|topK|/sum|topK| is ~0.008 for ALL three contrasts, so
+SPACE/PIRATE are not one-coordinate structures. What m2 = max|topK|/max|all|
+captures is placement (is the contrast's single most-extreme value inside
+the selected top-200): FANTASY 0.847 (extreme OUTSIDE), SPACE/PIRATE 1.000
+(extreme INSIDE). That *does* separate the winner from the losers in this
+set, as does (weakly) R_row (0.038 vs 0.060) — but with only 3 contrasts
+these are at most candidate predictors, not validated laws (see Part IX).
+The observable behavioral difference (baseline contamination) also
+distinguishes PIRATE; Test C probes the causal ranking question directly.
 
 *Files:* `generalize.py` (Test A + DIAG).
 
@@ -621,4 +624,87 @@ full200 per-seed (seed: minRank)  [transport on seeds 0,1,3,5,26]
 **Confirmed clean progression:** contrast diagnostic -> successful concept ->
 causal coordinate ranking -> causal magnitude ordering -> distributed
 full-window mechanism -> independent 30-seed confirmation (0% baseline vs
+**Confirmed clean progression:** contrast diagnostic -> successful concept ->
+causal coordinate ranking -> causal magnitude ordering -> distributed
+full-window mechanism -> independent 30-seed confirmation (0% baseline vs
 16.7% steered, with rank 160->4).
+
+---
+
+## Part IX — Prior-art calibration and novelty statement
+
+Directly relevant prior work was reviewed (3 librarian literature searches,
+Sep 2026). Key facts governing how strong a novelty claim we may make:
+
+### 1. Sparse steering per se is NOT novel
+Contrastive Activation Addition (Turner et al., arXiv:2308.10248) introduced
+contrast-derived steering vectors. Sparse Activation Steering (Bayat et al.,
+arXiv:2503.00177), SAE-SSV (He et al., EMNLP'25, 2025.emnlp-main.112), and
+CAusal Steering via Sparse Mediation (CAS-BiPO; Doan et al., EACL'26 Finds,
+2026.findings-eacl.57) all demonstrate that *some* sparse coordinate or
+subspace selection retains most steering effect. "We steer with a subset of
+coordinates" is established.
+
+### 2. The flagged "critique" paper is actually a POSITIVE sparse result
+The clawRxiv paper the literature review flagged ("Sparse Activation Steering
+with Mean Differences", clawrxiv.io/abs/2604.02039, 2026 — non-standard
+venue, verify before citing) is **not a critique of sparsification**: it
+reports that ENR-selected top-k works, keeping k=64/4096 -> 91.4% of dense
+effect, with a k-sweep showing axis-dependent windows (refusal tolerates
+k=32; diffuse axes such as formality need k>=256). It does NOT run any of
+our three control types (magnitude-shuffle, equal-weight, largest-coordinate
+ablation). Its point is that sparse RAW-coordinate steering *preserves*
+efficacy while reducing collateral damage.
+
+### 3. The largest overlap risk is a different paper (arXiv:2604.08524)
+"What Drives Representation Steering?" (Cheng/Wiegreffe/Manocha, 2026)
+sparsifies raw refusal vectors 90-99% and runs **largest-coordinate retention
+("bottom-k" baseline)** and **random-dropout** baselines: random dropout
+retains refusal-ASR up to ~40% sparsity; bottom-k up to ~80%. This is the
+paper a reviewer will invoke against us. Crucially it does NOT run
+magnitude-shuffle, equal-weight, or single-largest-coordinate-ablation; and
+it keeps top-k (drops the *rest*), the complement of our largest-coordinate
+retention test. It is also measured on a behavioral outcome (refusal ASR),
+not vocabulary transport.
+
+### 4. The controls that are still unique to this work
+Across the reviewed literature (ActAdd Appendix H partial-vector curves;
+Subramani et al. 2022 intrinsic dimension; Mayne et al. 2024 SAE-reconstruction
+failure; ROAST energy argument arXiv:2602.14143; SWAI token-level shuffle
+arXiv:2601.10960; AUSteer; depth-wise/layer-level equal-weight comparisons;
+and the `What Drives` paper above) — **no work was found that runs, on a raw
+residual-stream contrast vector: (a) magnitude-shuffle at fixed coordinates,
+(b) equal-weight vs ranked-weight, or (c) deletion of the single largest
+coordinate with survival reporting.** Test C does exactly these. The
+ActAdd Appendix H result (non-monotonic partial vectors; ~60-80% of dims
+needed; for one prompt 70% of dims beats 100%) is the closest prior
+observation of a window-like effect — we must cite and extend it, not ignore
+it.
+
+### 5. Metric caveat (honesty)
+Our outcome is **vocabulary transport** (held-out words entering generated
+text). "Steerable but Not Decodable" (arXiv:2604.02608) shows function
+vectors can steer behavior while projecting to *incoherent* token
+distributions. So our top-k failure is demonstrated for the vocabulary-
+transport metric; whether it generalizes to downstream behavioral metrics is
+open. We claim the phenomenon for the metric we measured, no more.
+
+### Novelty statement (defensible)
+> To our knowledge, prior work has not established that the efficacy of a
+> contrast-derived raw activation steering vector can depend on a
+> **distributed magnitude-ranked coordinate window** (~150-300 coords) being
+> preserved (top-1..50 failing), nor demonstrated that dependence through
+> the coordinated battery of retention, random-coordinate, magnitude-
+> shuffling, equal-weight, and largest-coordinate-ablation controls that
+> Test C applies — where single-coordinate deletion survives while magnitude-
+> shuffling and equal-weighting kill the effect. Sparse steering in SAE/
+> learned-mask spaces (SAS/SAE-SSV/CAS-BiPO) and raw-vector sparsification
+> (arXiv:2604.08524) are adjacent but operate under different selection
+> criteria, outcome metrics, and — critically — without these assignment
+> controls.
+
+*Citations:* arXiv:2308.10248, arXiv:2503.00177, 2025.emnlp-main.112,
+2026.findings-eacl.57, clawrxiv.io/abs/2604.02039 (verify venue),
+arXiv:2604.08524, arXiv:2602.14143, arXiv:2601.10960, arXiv:2604.02608.
+Venue verification recommended for all 2026 arXiv preprints before any
+external reference.
