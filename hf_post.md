@@ -53,17 +53,25 @@ also used the Instruct variant `Qwen/Qwen2-1.5B-Instruct`.
 ## What this is
 
 **These interventions provide causal evidence that, in the tested setting,
-effective vocabulary transport is not recovered by retaining the largest
-coordinates alone, and is associated with retaining a broader,
-magnitude-ranked window of coordinates from the vocabulary-logit contrast.**
+effective vocabulary transport is associated with retaining a distributed,
+magnitude-ranked window of coordinates from the vocabulary-logit contrast,
+rather than the largest coordinates alone.**
 
 > **In the tested FANTASY/town setting, retaining only the top 1–50 magnitude
 > coordinates produced no observed transport in the tested runs, whereas a
 > distributed ranked window of roughly 150–300 coordinates produced transport
 > in a subset of runs.**
 
-The apparent paradox is causal: **removing the largest coordinate does not
-remove the effect, while retaining only the largest coordinates does**.
+**The key observation is not simply that K=200 works.** It is that the
+effect survives removal of the single largest coordinate, while retaining
+only the largest 1–50 coordinates fails. Random coordinate selection and
+magnitude shuffling also fail. Together, these controls point toward a
+distributed, rank-dependent structure rather than a single dominant
+coordinate or an arbitrary sparse subset.
+
+The apparent paradox is revealed by the ablation experiments: **removing the
+largest coordinate does not remove the effect, while retaining only the
+largest coordinates does**.
 These results rule out a single load-bearing coordinate and disfavor several
 simple sparsification explanations in the tested setting. They are consistent
 with the effect depending on the **distributed ranked structure of the
@@ -87,7 +95,6 @@ degenerate: no repeated-token run of length ≥ 6 and type/token ratio > 0.6.
 target token in the steered logit ordering over generated steps (rank 0
 denotes the top-ranked token). Full evaluation code and per-seed outputs
 are in the repository.
-evaluation code and per-seed outputs are in the repository.
 
 ## Key results (all on Qwen2-1.5B, SEEDS = 30 unless noted)
 
@@ -130,18 +137,14 @@ as the relevant observation.
 | 0.75 | 6/30 | 0 | 0.263 | +0.942 |
 | **1.00** | **0/30** | **23** | 1.000 | +0.195 |
 
-**The strongest geometric observation is a discontinuity at complete
-projection into row(W):** every λ<1 condition retained a nonzero
-out-of-row component and showed at least some observed transport in this
-30-seed run; however, the absolute transport rates were low and did not
-increase monotonically with the out-of-row component. In this experiment,
-the pure row(W) projection (λ=1) produced none in 30 seeds; complete
-removal of the out-of-row component coincided with complete loss of
-observed transport, and the magnitude of
-the remaining out-of-row component did not predict efficacy. **Note on
-reading this table:** the behavioral counts (3–6/30 for λ<1) are stochastic
-and effectively flat. The clearest pattern in this experiment is the
-geometric boundary, rather than monotonic efficacy in λ.
+**The clearest geometric observation is a sharp behavioral boundary at
+complete projection into row(W):** every λ<1 condition retained a nonzero
+out-of-row component and showed some observed transport in this 30-seed run,
+whereas the pure row(W) projection (λ=1) showed none in 30 seeds. The
+absolute transport rates were low (3–6/30) and did not increase
+monotonically with the out-of-row component, and its magnitude did not
+predict efficacy. This is evidence for a boundary effect in this experiment,
+not yet evidence of a general row-space law.
 
 ### 4. Semantic vs. lexical (neighbor_probe)
 
